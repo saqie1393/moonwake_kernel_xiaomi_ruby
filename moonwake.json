@@ -3,7 +3,7 @@
     "kernelSource": {
       "name": "MoonWake",
       "repo": "https://github.com/saqie1393/moonwake_kernel_xiaomi_ruby",
-      "branch": "main",
+      "branch": "moon",
       "device": "ruby",
       "vendor": "xiaomi",
       "defconfig": "ruby_defconfig"
