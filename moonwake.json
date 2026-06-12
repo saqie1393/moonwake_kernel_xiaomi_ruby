@@ -1,49 +1,61 @@
 [
   {
     "kernelSource": {
-      "name": "MoonWake",
-      "repo": "https://github.com/saqie1393/moonwake_kernel_xiaomi_ruby",
-      "branch": "moon",
       "device": "ruby",
       "vendor": "xiaomi",
-      "defconfig": "ruby_defconfig"
+      "name": "MoonWake-Ruby",
+      "defconfig": "ruby_defconfig",
+      "extraConfig": "vendor/bbr.config vendor/noop.config",
+      "repo": "https://github.com/saqie1393/moonwake_kernel_xiaomi_ruby",
+      "branch": "moon"
+    },
+    "output_image": "Image.gz-dtb",
+    "additional_script_link": "disabled",
+    "additional_post_script_link": "disabled",
+    "kp": {
+      "use": false,
+      "kpimg_link": ""
+    },
+    "kernelsu": {
+      "enable": false,
+      "setupLink": "",
+      "setupArg": "",
+      "setupName": "",
+      "needPatch": false,
+      "susfsLink": ""
     },
     "toolchains": [
       {
+        "url": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/r530567.tar.gz",
         "name": "clang",
-        "repo": "https://github.com/crdroidandroid/android_prebuilts_clang_host_linux-x86_clang-r530567",
-        "branch": "14.0",
         "binPath": ["bin"]
       }
     ],
+    "ccache": true,
     "params": {
       "ARCH": "arm64",
       "CC": "clang",
+      "KCFLAGS": "-O3",
+      "build_out": "",
       "externalCommand": {
+        "KBUILD_BUILD_HOST": "github-actions",
+        "KBUILD_BUILD_USER": "builder",
         "CROSS_COMPILE": "aarch64-linux-gnu-",
         "CLANG_TRIPLE": "aarch64-linux-gnu-",
         "LD": "ld.lld",
+        "LLVM": "1",
+        "LLVM_IAS": "1",
         "AR": "llvm-ar",
         "NM": "llvm-nm",
         "OBJCOPY": "llvm-objcopy",
         "OBJDUMP": "llvm-objdump",
-        "READELF": "llvm-readelf",
-        "LLVM": "1",
-        "LLVM_IAS": "1"
+        "READELF": "llvm-readelf"
       }
     },
     "AnyKernel3": {
       "use": true,
       "repo": "https://github.com/osm0sis/AnyKernel3",
       "branch": "master"
-    },
-    "output_image": "Image.gz-dtb",
-    "ccache": true,
-    "kernelsu": {
-      "enable": false
-    },
-    "kp": {
-      "use": false
     }
   }
 ]
