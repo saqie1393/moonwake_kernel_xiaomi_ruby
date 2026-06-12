@@ -1,0 +1,92 @@
+name: Build MoonWake Kernel (Local)
+
+on:
+  workflow_dispatch:
+    inputs:
+      clang_version:
+        description: 'Clang version'
+        required: true
+        default: 'r530567'
+        type: choice
+        options:
+          - r530567  # Clang 19
+          - r498229b # Clang 17.0.4
+          - r487747c # Clang 17.0.2
+      config_type:
+        description: 'Config type'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+          - release
+          - debug
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout kernel source
+      uses: actions/checkout@v4
+      with:
+        repository: saqie1393/moonwake_kernel_xiaomi_ruby
+        path: kernel
+
+    - name: Setup build environment
+      run: |
+        sudo apt update
+        sudo apt install -y git make gcc g++ bc bison flex libssl-dev \
+          device-tree-compiler lz4 cpio python3 python3-distutils
+
+    - name: Download Google Clang ${{ inputs.clang_version }}
+      run: |
+        mkdir -p clang
+        cd clang
+        wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/${{ inputs.clang_version }}.tar.gz
+        tar -xzf ${{ inputs.clang_version }}.tar.gz
+        cd ..
+
+    - name: Setup PATH
+      run: |
+        echo "${{ github.workspace }}/clang/bin" >> $GITHUB_PATH
+        echo "PATH=${{ github.workspace }}/clang/bin:$PATH" >> $GITHUB_ENV
+
+    - name: Make defconfig
+      working-directory: ./kernel
+      run: |
+        make ARCH=arm64 ruby_defconfig
+
+    - name: Add feature configs (optional)
+      working-directory: ./kernel
+      run: |
+        # Example: Add KernelSU support
+        # make ARCH=arm64 vendor/kernelsu.config
+        echo "Skipping feature configs - add manually if needed"
+
+    - name: Build kernel
+      working-directory: ./kernel
+      run: |
+        export PATH=${{ github.workspace }}/clang/bin:$PATH
+        make -j$(nproc) ARCH=arm64 \
+          CC=clang \
+          LD=ld.lld \
+          AR=llvm-ar \
+          NM=llvm-nm \
+          OBJCOPY=llvm-objcopy \
+          OBJDUMP=llvm-objdump \
+          READELF=llvm-readelf \
+          CLANG_TRIPLE=aarch64-linux-gnu- \
+          CROSS_COMPILE=aarch64-linux-gnu-
+
+    - name: Pack AK3 (AnyKernel3)
+      run: |
+        git clone https://github.com/osm0sis/AnyKernel3 -b master ak3
+        cp kernel/arch/arm64/boot/Image.gz-dtb ak3/
+        cp kernel/arch/arm64/boot/dtbo.img ak3/ 2>/dev/null || true
+        cd ak3
+        zip -r9 ../MoonWake-${{ inputs.config_type }}-clang${{ inputs.clang_version }}.zip *
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: MoonWake-Kernel-${{ inputs.config_type }}
+        path: MoonWake-*.zip
