@@ -26,7 +26,8 @@
     },
     "toolchains": [
       {
-        "url": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/r530567.tar.gz",
+        "repo": "https://gitlab.com/Neutron-Clang/clang-neutron.git",
+        "branch": "main",
         "name": "clang",
         "binPath": ["bin"]
       }
